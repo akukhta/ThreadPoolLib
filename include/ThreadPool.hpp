@@ -43,7 +43,7 @@ namespace ThreadPoolLib
 
         std::condition_variable cv;
         std::queue<std::move_only_function<void()>> scheduledTasks;
-        std::atomic_bool isRunning = true;
+        bool isRunning = true;
         std::mutex mtx;
         std::vector<ThreadWorker> threads;
     };
