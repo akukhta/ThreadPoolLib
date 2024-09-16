@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <future>
 #include <type_traits>
+#include "IThreadPool.h"
 #ifdef __APPLE__
 #include <memory>
 #endif
@@ -19,7 +20,7 @@
 
 namespace ThreadPoolLib
 {
-    class ThreadPool
+    class ThreadPool : public IThreadPool<ThreadPool>
     {
     public:
         ThreadPool(size_t amountOfThreads);
@@ -42,7 +43,7 @@ namespace ThreadPoolLib
                 std::unique_lock lk(mtx);
 
 #ifdef __APPLE__
-                scheduledTasks.emplace([task]() { task(); });
+                scheduledTasks.emplace_back([task]() { task(); });
 #else
                 scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
 #endif
@@ -70,7 +71,7 @@ namespace ThreadPoolLib
         std::condition_variable cv;
 
 #ifdef __APPLE__
-        std::queue<std::function<void()>> scheduledTasks;
+        std::deque<std::function<void()>> scheduledTasks;
 #else
         std::queue<std::move_only_function<void()>> scheduledTasks;
 #endif

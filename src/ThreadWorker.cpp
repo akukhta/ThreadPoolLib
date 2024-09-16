@@ -29,7 +29,7 @@ void ThreadPoolLib::ThreadWorker::run()
             }
 
             task = std::move(pool->scheduledTasks.front());
-            pool->scheduledTasks.pop();
+            pool->scheduledTasks.pop_front();
         }
 
         task();
