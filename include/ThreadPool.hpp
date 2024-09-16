@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <shared_mutex>
+#include <mutex>
 #include <atomic>
 #include <functional>
 #include <queue>
@@ -32,14 +32,9 @@ namespace ThreadPoolLib
             auto taskReturnValue = task.get_future();
 
             {
-                {
-                    mtx.lock();
-                    //std::unique_lock lk(mtx);
-                    scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
-                    mtx.unlock();
-                }
-
-                cv.notify_one();
+                std::unique_lock lk(mtx);
+                scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+                cv.notify_all();
             }
 
             return taskReturnValue;
@@ -59,10 +54,10 @@ namespace ThreadPoolLib
     private:
         friend class ThreadWorker;
 
-        std::condition_variable_any cv;
+        std::condition_variable cv;
         std::queue<std::move_only_function<void()>> scheduledTasks;
         bool isRunning = true;
-        std::shared_mutex mtx;
+        std::mutex mtx;
         std::vector<ThreadWorker> threads;
     };
 }

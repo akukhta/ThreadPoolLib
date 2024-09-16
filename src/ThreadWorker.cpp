@@ -16,27 +16,17 @@ void ThreadPoolLib::ThreadWorker::run()
         std::move_only_function<void()> task;
 
         {
-            {
-                std::unique_lock lk(pool->mtx);
-                pool->cv.wait(lk, [this]()
-                    {return !pool->isRunning || !pool->scheduledTasks.empty(); });
-            }
-
-
-            pool->mtx.lock_shared();
+            std::unique_lock lk(pool->mtx);
+            pool->cv.wait(lk, [this]()
+                {return !pool->isRunning || !pool->scheduledTasks.empty(); });
 
             if (pool->isRunning == false && pool->scheduledTasks.empty())
             {
-                pool->mtx.unlock_shared();
                 break;
             }
-            pool->mtx.unlock_shared();
 
-            {
-                std::unique_lock lk(pool->mtx);
-                task = std::move(pool->scheduledTasks.front());
-                pool->scheduledTasks.pop();
-            }
+            task = std::move(pool->scheduledTasks.front());
+            pool->scheduledTasks.pop();
         }
 
         task();
