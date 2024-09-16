@@ -32,8 +32,13 @@ namespace ThreadPoolLib
             auto taskReturnValue = task.get_future();
 
             {
-                std::unique_lock lk(mtx);
-                scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+                {
+                    mtx.lock();
+                    //std::unique_lock lk(mtx);
+                    scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+                    mtx.unlock();
+                }
+
                 cv.notify_one();
             }
 
