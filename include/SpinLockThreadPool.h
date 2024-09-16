@@ -23,18 +23,19 @@ auto addTask(FuncType&& f, Args... args)
 
 #ifdef __APPLE__
             auto task = std::make_shared<std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)>>(boundFunction);
+            auto taskReturnValue = task->get_future();
 #else
             std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)> task(boundFunction);
-#endif
             auto taskReturnValue = task.get_future();
+#endif
 
             {
                 ScopedSpinLock lk(sl);
 
 #ifdef __APPLE__
-                scheduledTasks.emplace([task]() { task(); });
+                scheduledTasks.emplace_back([task]() { (*task)(); });
 #else
-                scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+                scheduledTasks.emplace_back([task = std::move(task)]() mutable { task(); });
 #endif
             }
 
@@ -47,7 +48,7 @@ auto addTask(FuncType&& f, Args... args)
         friend class SpinLockThreadWorker;
         std::vector<SpinLockThreadWorker> workerThreads;
         SpinLock sl;
-        bool isRunning;
+        bool isRunning = true;
         std::deque<std::function<void()>> scheduledTasks;
     };
 }

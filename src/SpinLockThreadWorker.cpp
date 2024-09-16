@@ -9,6 +9,11 @@ ThreadPoolLib::SpinLockThreadWorker::SpinLockThreadWorker(SpinLockThreadPool *po
     workerThread = std::thread(&SpinLockThreadWorker::run, this);
 }
 
+ThreadPoolLib::SpinLockThreadWorker::~SpinLockThreadWorker()
+{
+    workerThread.join();
+}
+
 void ThreadPoolLib::SpinLockThreadWorker::run()
 {
     while (true)
