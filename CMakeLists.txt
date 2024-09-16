@@ -9,3 +9,5 @@ add_library(${PROJECT_NAME}
 	src/ThreadWorker.hpp
 	src/ThreadWorker.cpp
 )
+
+target_include_directories(ThreadPool PUBLIC include/)
