@@ -13,8 +13,11 @@ void ThreadPoolLib::ThreadWorker::run()
 {
     while (true)
     {
+#ifdef __APPLE__
+        std::function<void()> task;
+#else
         std::move_only_function<void()> task;
-
+#endif
         {
             std::unique_lock lk(pool->mtx);
             pool->cv.wait(lk, [this]()

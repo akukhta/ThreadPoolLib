@@ -7,6 +7,10 @@
 #include <condition_variable>
 #include <future>
 #include <type_traits>
+#ifdef __APPLE__
+#include <memory>
+#endif
+
 #include "../src/ThreadWorker.hpp"
 
 #ifdef _DEBUG
@@ -27,13 +31,22 @@ namespace ThreadPoolLib
         {
             auto boundFunction = std::bind(std::forward<FuncType>(f), std::forward<Args>(args)...);
 
+#ifdef __APPLE__
+            auto task = std::make_shared<std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)>>(boundFunction);
+#else
             std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)> task(boundFunction);
-
+#endif
             auto taskReturnValue = task.get_future();
 
             {
                 std::unique_lock lk(mtx);
+
+#ifdef __APPLE__
+                scheduledTasks.emplace([task]() { task(); });
+#else
                 scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+#endif
+
                 cv.notify_all();
             }
 
@@ -55,7 +68,12 @@ namespace ThreadPoolLib
         friend class ThreadWorker;
 
         std::condition_variable cv;
+
+#ifdef __APPLE__
+        std::queue<std::function<void()>> scheduledTasks;
+#else
         std::queue<std::move_only_function<void()>> scheduledTasks;
+#endif
         bool isRunning = true;
         std::mutex mtx;
         std::vector<ThreadWorker> threads;
