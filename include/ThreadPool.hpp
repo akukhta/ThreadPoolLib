@@ -9,6 +9,10 @@
 #include <type_traits>
 #include "../src/ThreadWorker.hpp"
 
+#ifdef _DEBUG
+#include <iostream>
+#endif
+
 namespace ThreadPoolLib
 {
     class ThreadPool
@@ -38,6 +42,15 @@ namespace ThreadPoolLib
 
         void finish();
 
+#ifdef _DEBUG
+        void printInfo()
+        {
+            for (auto& worker : threads)
+            {
+                std::cout << worker.getWorkerId() << ":\t" << worker.getAmountOfProcessedCounts() << "\n";
+            }
+        }
+#endif
     private:
         friend class ThreadWorker;
 

@@ -30,6 +30,13 @@ void ThreadPoolLib::ThreadWorker::run()
         }
 
         task();
+
+#ifdef _DEBUG
+        {
+            std::unique_lock lk(*workerMtx);
+            ++taskProcessed;
+        }
+#endif
     }
 
     std::cout << "Thread worker is done" << std::endl;
