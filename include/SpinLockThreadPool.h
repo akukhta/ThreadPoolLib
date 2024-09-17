@@ -49,6 +49,12 @@ auto addTask(FuncType&& f, Args... args)
         std::vector<SpinLockThreadWorker> workerThreads;
         SpinLock sl;
         bool isRunning = true;
+
+#ifdef  __cpp_lib_move_only_function
+        std::deque<std::move_only_function<void()>> scheduledTasks;
+#else
         std::deque<std::function<void()>> scheduledTasks;
+#endif
+
     };
 }
