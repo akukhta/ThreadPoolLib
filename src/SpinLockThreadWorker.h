@@ -1,6 +1,10 @@
 #pragma once
 #include <thread>
 
+#ifdef _DEBUG
+#include <mutex>
+#endif
+
 namespace ThreadPoolLib
 {
     class SpinLockThreadPool;

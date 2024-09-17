@@ -70,11 +70,12 @@ namespace ThreadPoolLib
 
         std::condition_variable cv;
 
-#ifdef __APPLE__
-        std::deque<std::function<void()>> scheduledTasks;
+#ifdef  __cpp_lib_move_only_function
+        std::deque<std::move_only_function<void()>> scheduledTasks;
 #else
-        std::queue<std::move_only_function<void()>> scheduledTasks;
+        std::deque<std::function<void()>> scheduledTasks;
 #endif
+
         bool isRunning = true;
         std::mutex mtx;
         std::vector<ThreadWorker> threads;
