@@ -45,7 +45,7 @@ namespace ThreadPoolLib
 #ifdef __APPLE__
                 scheduledTasks.emplace_back([task]() { task(); });
 #else
-                scheduledTasks.emplace([task = std::move(task)]() mutable { task(); });
+                scheduledTasks.emplace_back([task = std::move(task)]() mutable { task(); });
 #endif
 
                 cv.notify_all();
