@@ -21,7 +21,7 @@ void ThreadPoolLib::ThreadWorker::run()
         {
             std::unique_lock lk(pool->mtx);
             pool->cv.wait(lk, [this]()
-                {return !pool->isRunning || !pool->scheduledTasks.empty(); });
+                { return !pool->isRunning || !pool->scheduledTasks.empty(); });
 
             if (pool->isRunning == false && pool->scheduledTasks.empty())
             {
@@ -58,12 +58,15 @@ void ThreadPoolLib::ThreadWorker::run()
 bool ThreadPoolLib::ThreadWorker::isFree()
 {
     std::unique_lock lk(pool->mtx);
-    return isBusy;
+    return isBusy == false;
 }
 
 ThreadPoolLib::ThreadWorker::~ThreadWorker()
 {
-    workerThread.join();
+    if (workerThread.joinable())
+    {
+        workerThread.join();
+    }
     //std::cout << "Thread Worker destructor" << std::endl;
 }
 

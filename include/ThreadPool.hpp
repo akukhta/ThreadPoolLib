@@ -26,6 +26,8 @@ namespace ThreadPoolLib
         ThreadPool(size_t amountOfThreads);
         ~ThreadPool();
 
+        void restart();
+
         template <typename FuncType, typename... Args>
         auto addTask(FuncType&& f, Args... args)
         {
@@ -57,6 +59,8 @@ namespace ThreadPoolLib
 
         void finish();
 
+        bool isPoolRunning();
+
 #ifdef _DEBUG
         void printInfo()
         {
@@ -78,6 +82,7 @@ namespace ThreadPoolLib
 #endif
 
         bool isRunning = true;
+        size_t amountOfWorkers;
         std::mutex mtx;
         std::vector<ThreadWorker> threads;
     };

@@ -38,6 +38,8 @@ namespace ThreadPoolLib
 #endif
 
     private:
+        friend class ThreadPool;
+
         ThreadPool* pool;
         std::thread workerThread;
         bool isBusy = false;
