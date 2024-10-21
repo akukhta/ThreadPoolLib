@@ -17,6 +17,18 @@ ThreadPoolLib::ThreadPool::~ThreadPool()
 }
 
 
+size_t ThreadPoolLib::ThreadPool::getFreeThreadsCount()
+{
+    size_t count = 0;
+
+    for (auto &worker: threads)
+    {
+        count += worker.isFree() ? 1 : 0;
+    }
+
+    return count;
+}
+
 void ThreadPoolLib::ThreadPool::finish()
 {
     {

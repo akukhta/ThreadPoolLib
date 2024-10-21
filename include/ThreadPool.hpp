@@ -24,7 +24,6 @@ namespace ThreadPoolLib
     {
     public:
         ThreadPool(size_t amountOfThreads);
-
         ~ThreadPool();
 
         template <typename FuncType, typename... Args>
@@ -34,16 +33,16 @@ namespace ThreadPoolLib
 
 #ifdef __APPLE__
             auto task = std::make_shared<std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)>>(boundFunction);
+            auto taskReturnValue = task->get_future();
 #else
             std::packaged_task<std::invoke_result_t<FuncType, Args...>(void)> task(boundFunction);
-#endif
             auto taskReturnValue = task.get_future();
-
+#endif
             {
                 std::unique_lock lk(mtx);
 
 #ifdef __APPLE__
-                scheduledTasks.emplace_back([task]() { task(); });
+                scheduledTasks.emplace_back([task]() { (*task.get())(); });
 #else
                 scheduledTasks.emplace_back([task = std::move(task)]() mutable { task(); });
 #endif
@@ -53,6 +52,8 @@ namespace ThreadPoolLib
 
             return taskReturnValue;
         }
+
+        size_t getFreeThreadsCount();
 
         void finish();
 

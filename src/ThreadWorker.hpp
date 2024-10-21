@@ -22,6 +22,7 @@ namespace ThreadPoolLib
         ~ThreadWorker();
 
         void run();
+        bool isFree();
 
 #ifdef _DEBUG
         size_t getAmountOfProcessedCounts()
@@ -39,6 +40,7 @@ namespace ThreadPoolLib
     private:
         ThreadPool* pool;
         std::thread workerThread;
+        bool isBusy = false;
 
 #ifdef _DEBUG
         std::unique_ptr<std::mutex> workerMtx = std::make_unique<std::mutex>();

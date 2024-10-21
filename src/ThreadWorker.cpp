@@ -5,7 +5,7 @@
 ThreadPoolLib::ThreadWorker::ThreadWorker(ThreadPool* pool)
     : pool(pool)
 {
-    std::cout << "Thread Worker constructor" << std::endl;
+    //std::cout << "Thread Worker constructor" << std::endl;
     workerThread = std::thread(&ThreadWorker::run, this);
 }
 
@@ -32,7 +32,17 @@ void ThreadPoolLib::ThreadWorker::run()
             pool->scheduledTasks.pop_front();
         }
 
+        {
+            std::unique_lock lk(pool->mtx);
+            isBusy = true;
+        }
+
         task();
+
+        {
+            std::unique_lock lk(pool->mtx);
+            isBusy = false;
+        }
 
 #ifdef _DEBUG
         {
@@ -42,13 +52,19 @@ void ThreadPoolLib::ThreadWorker::run()
 #endif
     }
 
-    std::cout << "Thread worker is done" << std::endl;
+    //std::cout << "Thread worker is done" << std::endl;
+}
+
+bool ThreadPoolLib::ThreadWorker::isFree()
+{
+    std::unique_lock lk(pool->mtx);
+    return isBusy;
 }
 
 ThreadPoolLib::ThreadWorker::~ThreadWorker()
 {
     workerThread.join();
-    std::cout << "Thread Worker destructor" << std::endl;
+    //std::cout << "Thread Worker destructor" << std::endl;
 }
 
 
