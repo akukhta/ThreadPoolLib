@@ -1,5 +1,6 @@
 #pragma once
 #include <thread>
+#include "SpinLook.h"
 
 #ifdef _DEBUG
 #include <mutex>
@@ -22,6 +23,7 @@ namespace ThreadPoolLib
         ~SpinLockThreadWorker();
 
         void run();
+        bool isFree();
 
 #ifdef _DEBUG
         size_t getAmountOfProcessedCounts()
@@ -36,9 +38,13 @@ namespace ThreadPoolLib
 #endif
 
     private:
+        friend class SpinLockThreadPool;
+
         SpinLockThreadPool* pool;
         std::thread workerThread;
-
+        bool isBusy = false;
+        std::unique_ptr<SpinLock> sl = std::make_unique<SpinLock>();
+        
 #ifdef _DEBUG
         std::unique_ptr<std::mutex> workerMtx = std::make_unique<std::mutex>();
         size_t taskProcessed = 0;

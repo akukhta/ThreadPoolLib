@@ -43,12 +43,17 @@ auto addTask(FuncType&& f, Args... args)
         }
 
         void finish();
+        void restart();
+        bool isPoolRunning();
+
+        size_t getFreeThreadsCount();
 
     private:
         friend class SpinLockThreadWorker;
         std::vector<SpinLockThreadWorker> workerThreads;
         SpinLock sl;
         bool isRunning = true;
+        size_t amountOfWorkers;
 
 #ifdef  __cpp_lib_move_only_function
         std::deque<std::move_only_function<void()>> scheduledTasks;

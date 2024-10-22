@@ -43,9 +43,9 @@ namespace ThreadPoolLib
         ThreadPool* pool;
         std::thread workerThread;
         bool isBusy = false;
+        std::unique_ptr<std::mutex> workerMtx = std::make_unique<std::mutex>();
 
 #ifdef _DEBUG
-        std::unique_ptr<std::mutex> workerMtx = std::make_unique<std::mutex>();
         size_t taskProcessed = 0;
 #endif
     };

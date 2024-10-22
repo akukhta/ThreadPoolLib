@@ -33,14 +33,14 @@ void ThreadPoolLib::ThreadWorker::run()
         }
 
         {
-            std::unique_lock lk(pool->mtx);
+            std::unique_lock lk(*workerMtx);
             isBusy = true;
         }
 
         task();
 
         {
-            std::unique_lock lk(pool->mtx);
+            std::unique_lock lk(*workerMtx);
             isBusy = false;
         }
 
@@ -57,7 +57,7 @@ void ThreadPoolLib::ThreadWorker::run()
 
 bool ThreadPoolLib::ThreadWorker::isFree()
 {
-    std::unique_lock lk(pool->mtx);
+    std::unique_lock lk(*workerMtx);
     return isBusy == false;
 }
 

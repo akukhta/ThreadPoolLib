@@ -1,4 +1,5 @@
 #include "SpinLockThreadWorker.h"
+#include "SpinLockThreadWorker.h"
 #include "SpinLockThreadPool.h"
 #include "ScopedSpinLock.h"
 #include <functional>
@@ -11,7 +12,10 @@ ThreadPoolLib::SpinLockThreadWorker::SpinLockThreadWorker(SpinLockThreadPool *po
 
 ThreadPoolLib::SpinLockThreadWorker::~SpinLockThreadWorker()
 {
-    workerThread.join();
+    if (workerThread.joinable())
+    {
+        workerThread.join();
+    }
 }
 
 void ThreadPoolLib::SpinLockThreadWorker::run()
@@ -35,7 +39,7 @@ void ThreadPoolLib::SpinLockThreadWorker::run()
             {
                 continue;
             }
-            else if (pool->isRunning && !pool->scheduledTasks.empty())
+            else if (!pool->scheduledTasks.empty())
             {
                 task = std::move(pool->scheduledTasks.front());
                 pool->scheduledTasks.pop_front();
@@ -43,7 +47,17 @@ void ThreadPoolLib::SpinLockThreadWorker::run()
             }
         }
 
+        {
+            ScopedSpinLock sp(*sl.get());
+            isBusy = true;
+        }
+
         task();
+
+        {
+            ScopedSpinLock sp(*sl.get());
+            isBusy = false;
+        }
 
 #ifdef _DEBUG
         {
@@ -51,6 +65,12 @@ void ThreadPoolLib::SpinLockThreadWorker::run()
         }
 #endif
     }
+}
+
+bool ThreadPoolLib::SpinLockThreadWorker::isFree()
+{
+    ScopedSpinLock sp(*sl);
+    return isBusy == false;
 }
 
 
